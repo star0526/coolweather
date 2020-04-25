@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import com.star.coolweather.bean.City;
 import com.star.coolweather.bean.County;
 import com.star.coolweather.bean.Province;
+import com.star.coolweather.gson.Weather;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,11 +74,11 @@ public class Utility {
     public static boolean handleCountyResponse(String response,int cityId) {
         if (!TextUtils.isEmpty(response)) {
             try {
-                JSONArray allProvince = new JSONArray(response);
-                for (int i = 0; i < allProvince.length(); i++) {
-                    JSONObject countyObject = allProvince.getJSONObject(i);
+                JSONArray allCounty = new JSONArray(response);
+                for (int i = 0; i < allCounty.length(); i++) {
+                    JSONObject countyObject = allCounty.getJSONObject(i);
                     County county = new County();
-                    county.setCountryName(countyObject.getString("name"));
+                    county.setCountyName(countyObject.getString("name"));
                     county.setWeahterId(countyObject.getString("weather_id"));
                     county.setCityId(cityId);
                     county.save();
@@ -90,4 +91,20 @@ public class Utility {
         return false;
     }
 
+    /**
+     * 将Json数据转换为Weather实例类
+     * @param reponse
+     * @return
+     */
+    public static Weather handleWeatherReponse(String reponse){
+        try {
+            JSONObject jsonObject = new JSONObject(reponse);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent,Weather.class);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

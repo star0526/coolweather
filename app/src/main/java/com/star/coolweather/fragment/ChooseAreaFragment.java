@@ -1,6 +1,7 @@
 package com.star.coolweather.fragment;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,9 +18,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.star.coolweather.R;
+import com.star.coolweather.activity.WeatherActivity;
 import com.star.coolweather.bean.City;
 import com.star.coolweather.bean.County;
 import com.star.coolweather.bean.Province;
+import com.star.coolweather.gson.Weather;
 import com.star.coolweather.util.HttpUtil;
 import com.star.coolweather.util.Utility;
 
@@ -84,6 +87,12 @@ public class ChooseAreaFragment extends Fragment {
                 }else if(currentLevel == LEVEL_CITY){
                     selectedCity = cityList.get(position);
                     queryCounties();
+                }else if(currentLevel == LEVEL_COUNTY){
+                    String weahterId = countyList.get(position).getWeahterId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id",weahterId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -111,7 +120,6 @@ public class ChooseAreaFragment extends Fragment {
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
-            int count = adapter.getCount();
             currentLevel = LEVEL_PROVINCE;
         }else{
             String address = "http://guolin.tech/api/china/";
@@ -142,11 +150,11 @@ public class ChooseAreaFragment extends Fragment {
     private void queryCounties() {
         title_text.setText(selectedCity.getCityName());
         backButton.setVisibility(View.VISIBLE);
-        countyList = DataSupport.where("cityid = ?",String.valueOf(selectedCity.getId())).find(County.class);
+        countyList = DataSupport.where("cityid = ?",String.valueOf(selectedCity.getCityCode())).find(County.class);
         if(countyList.size() > 0){
             dataList.clear();
             for(County county:countyList){
-                dataList.add(county.getCountryName());
+                dataList.add(county.getCountyName());
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
@@ -177,7 +185,7 @@ public class ChooseAreaFragment extends Fragment {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String responseText = response.body().string();
+                final String responseText = response.body().string();
                 boolean result = true;
                 switch (type){
                     case "province":
